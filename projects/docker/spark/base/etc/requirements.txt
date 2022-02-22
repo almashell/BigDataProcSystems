@@ -1,2 +1,9 @@
 numpy==1.14.3
 pandas==0.22.0
+folium
+pyspark
+geopandas
+rtree
+geopy
+kafka-python==2.0.2
+tweepy==4.2

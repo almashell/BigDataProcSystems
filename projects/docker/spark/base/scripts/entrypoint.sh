@@ -17,6 +17,9 @@ main()
         "worker") 
             init_worker "$@"
             ;;
+        "jupyter") 
+            init_jupyter "$@"
+            ;;
         *)
             echo "Error: Unsupported node type."
             exit 127
@@ -86,6 +89,31 @@ function init_worker()
     echo "Starting Hadoop daemons..."
     hdfs --daemon start datanode
     yarn --daemon start nodemanager
+}
+
+function init_jupyter()
+{
+
+    if [ ! -z "$SSH_PUBLIC_KEY" ]; then
+        echo "Adding a public key..."
+        echo $SSH_PUBLIC_KEY >> .ssh/id_rsa.pub
+        cat .ssh/id_rsa.pub >> .ssh/authorized_keys
+        # TODO: unset SSH_PUBLIC_KEY somehow
+    elif [ ! -f .ssh/id_rsa.pub ]; then
+        echo "Error: Public key was not found."
+        exit 1
+    fi
+
+    echo "Starting SSH service..."
+    sudo service ssh start
+
+    echo "Starting Jupyter notebook server..."
+    jupyter notebook --config .jupyter/jupyter_notebook_config.py
+
+    # https://theckang.github.io/2015/12/31/remote-spark-jobs-on-yarn.html
+    # https://stackoverflow.com/questions/40354624/spark-yarn-cluster-mode-get-this-error-could-not-find-or-load-main-class-org-ap
+    hadoop fs -fs "hdfs://master:9000/" -mkdir /user/bigdata/jars
+    hdfs dfs -fs "hdfs://master:9000/" -put $SPARK_HOME/jars/* /user/bigdata/jars
 }
 
 

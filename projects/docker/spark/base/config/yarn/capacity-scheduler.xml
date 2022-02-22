@@ -23,8 +23,10 @@
 
     <property>
         <name>yarn.scheduler.capacity.maximum-am-resource-percent</name>
-        <value>0.1</value>
+        <value>0.5</value>
         <description>
+        https://community.cloudera.com/t5/Support-Questions/Endless-INFO-Client-Application-report-for-application-xx/td-p/31460
+        https://stackoverflow.com/a/33012538
         Maximum percent of resources in the cluster which can be used to run 
         application masters i.e. controls number of concurrent running
         applications.

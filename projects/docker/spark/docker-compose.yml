@@ -12,18 +12,94 @@ services:
       - SSH_PRIVATE_KEY=${SSH_PRIVATE_KEY}
     ports:
       - "9870:9870"
+      - "9864:9864"
       - "8088:8088"
       - "18080:18080"
-      - "9999:9999"
-    container_name: master
-    volumes: 
-      - ./data:/home/bigdata/data
-      - ./app:/home/bigdata/app
+      - "8032:8032"
+      - "9000:9000"
+      - "9866:9866"
+    container_name: spark_master
+    # volumes: 
+    #   - ./data:/home/bigdata/data
+    #   - ./app:/home/bigdata/app
+    restart: unless-stopped
+    networks:
+      - spark-network
+
   worker:
     image: spark-ubuntu-base
     # build:
     #   context: .
     #   dockerfile: ./base/Dockerfile
+    depends_on:
+      - master
     command: worker
+    hostname: worker
     environment: 
       - SSH_PUBLIC_KEY=${SSH_PUBLIC_KEY}
+    ports:
+      - "8042:8042"
+    restart: unless-stopped
+    networks:
+      - spark-network
+
+  zookeeper:
+    image: wurstmeister/zookeeper
+    hostname: zookeeper
+    ports:
+      - "2181:2181"
+    restart: unless-stopped
+    networks:
+      - spark-network
+
+  kafka:
+    image: wurstmeister/kafka
+    hostname: broker
+    depends_on:
+      - zookeeper
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_LISTENERS=CLIENT://:29092,EXTERNAL://:9092
+      - KAFKA_ADVERTISED_LISTENERS=CLIENT://broker:29092,EXTERNAL://localhost:9092
+      - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+      - "8080:8080"
+    restart: unless-stopped
+    networks:
+      - spark-network
+  
+  jupyter:
+    image: spark-ubuntu-master
+    depends_on:
+      - master
+    command: jupyter   # argument for entrypoint script
+    environment: 
+      - SSH_PUBLIC_KEY=${SSH_PUBLIC_KEY}
+        # https://community.cloudera.com/t5/Support-Questions/Got-permission-denied-when-running-pyspark-master-yarn/td-p/153529
+      - SPARK_CONF_DIR=/home/bigdata/notebooks/config
+        # https://gist.github.com/BeattieM/c66d4fcfa0dc46820ff117403331c3bd
+        # https://stackoverflow.com/questions/61432807/hadoop-spark-there-are-1-datanodes-running-and-1-nodes-are-excluded-in-th
+      - HADOOP_CONF_DIR=/home/bigdata/notebooks/config
+      - HADOOP_USER_NAME=bigdata
+      - JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+    volumes:
+      - ./notebooks:/home/bigdata/notebooks
+    ports:
+      - "9999:9999"
+      - "4040:4040"
+      - "22:22"
+    restart: unless-stopped
+    networks:
+      - spark-network
+
+networks:
+  spark-network: # Network
+    driver: bridge
+    ipam:
+      config:
+      - subnet:  172.20.0.0/24
+        gateway: 172.20.0.1

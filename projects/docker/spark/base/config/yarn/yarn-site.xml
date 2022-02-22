@@ -39,7 +39,7 @@
 		In other cases, the default is 8192MB.
 		</description>
 		<name>yarn.nodemanager.resource.memory-mb</name>
-		<value>4096</value>
+		<value>8192</value>
 	</property>
 	<property>
 		<description>The minimum allocation for every container request at the RM
@@ -54,7 +54,7 @@
 		in MBs. Memory requests higher than this will throw an
 		InvalidResourceRequestException.</description>
 		<name>yarn.scheduler.maximum-allocation-mb</name>
-		<value>2048</value>
+		<value>8192</value>
 	</property>
   	<property>
     	<description>The heart-beat interval in milliseconds for every NodeManager in the cluster.</description>
