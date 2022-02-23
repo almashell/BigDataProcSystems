@@ -181,4 +181,9 @@
 		<name>yarn.resourcemanager.scheduler.monitor.policies</name>
 		<value>org.apache.hadoop.yarn.server.resourcemanager.monitor.capacity.ProportionalCapacityPreemptionPolicy</value>
 	</property>
+	<property>
+		<description>https://stackoverflow.com/a/61378227</description>
+		<name>yarn.nodemanager.vmem-pmem-ratio</name>      
+		<value>5</value>  
+	</property>
 </configuration>
