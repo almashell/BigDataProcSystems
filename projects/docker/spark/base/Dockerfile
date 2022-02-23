@@ -115,6 +115,7 @@ RUN \
         net-tools \
         curl \
         htop \
+        unzip \
     # Install JDK 8
     && add-apt-repository ppa:openjdk-r/ppa \
     && apt-get -y install openjdk-8-jdk \
